@@ -1,0 +1,1 @@
+ -c -mcpu=$(MP_PROCESSOR_OPTION)  -omf=elf -DXPRJ_default=$(CND_CONF)    -Wa,-g,--no-relax$(MP_EXTRA_AS_POST) C:\Work_space_emotiv\Dspic_205\Flex2_Slave.X\fir_1024_38.2_48.3_2dB_40dB_95ord_slave.s
