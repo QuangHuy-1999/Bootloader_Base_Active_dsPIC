@@ -102,6 +102,7 @@ class Bootloader:
         BootloaderError
             If HEX-file cannot be flashed.
         """
+        self._dfu_request()
         path = hexfile
         hexfile = IntelHex(path)
         segments = self._get_segments_in_range(hexfile, self._memory_range)
@@ -185,7 +186,7 @@ class Bootloader:
     def _send_and_receive(self, command: Command, data: bytes = b"") -> ResponseBase:
         self.interface.write(bytes(command) + data)
         response = _RESPONSE_TYPE_MAP[command.command].from_serial(self.interface)
-        # print("Response: ", response)
+        print("Response: ", response)
         self._verify_good_response(command, response)
         return response
 
@@ -355,6 +356,14 @@ class Bootloader:
             ),
             data.tobinstr() + padding,
         )
+
+    def _dfu_request(self) -> None:
+        self.interface.write(bytes(Command(
+                header1=Header.header1,
+                header2=Header.header2,
+                header3=Header.header3,
+                total_length=5,
+                command=CommandCode.DFU_REQUEST)))
 
     def _self_verify(self) -> None:
         self._send_and_receive(

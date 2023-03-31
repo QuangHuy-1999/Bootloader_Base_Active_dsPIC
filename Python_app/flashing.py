@@ -64,13 +64,13 @@ def get_parser() -> argparse.ArgumentParser:
         required=True,
         help="Symbol rate of device's serial bus.",
     )
-    parser.add_argument(
-        "-t",
-        "--timeout",
-        type=float,
-        default=5,
-        help="Try to read data from the bus for this many seconds before giving up.",
-    )
+    # parser.add_argument(
+    #     "-t",
+    #     "--timeout",
+    #     type=float,
+    #     default=5,
+    #     help="Try to read data from the bus for this many seconds before giving up.",
+    # )
     parser.add_argument(
         "-v",
         "--verbose",
@@ -109,7 +109,7 @@ def flash(parsed_args: Union[None, argparse.Namespace] = None) -> None:
         boot = Bootloader(
             port=parsed_args.port,
             baudrate=parsed_args.baudrate,
-            timeout=parsed_args.timeout,
+            # timeout=parsed_args.timeout,
         )
         boot.flash(hexfile=parsed_args.file)
     except BootloaderError as exc:

@@ -68,6 +68,8 @@ extern volatile uint16_t EEG_2SEND[ADCMAXBUFFER][36];
 extern volatile uint16_t EEG_BUF_1024HZ[ADCMAXBUFFER][36]; 
 extern unsigned char BUF_1024_Head;
 extern unsigned char BUF_1024_Tail;
+uint8_t dfu_buffer[5];
+uint8_t count_dfu = 0;
 
 /*
                          Main application
@@ -109,7 +111,7 @@ int main(void)
     
     while (1)
     {
-        printf("Hello a Lam\n");
+        printf("Hello a Vinh\n");
         __delay_ms(100);
         if(BUF_1024_Head != BUF_1024_Tail)
         {
@@ -142,14 +144,18 @@ int main(void)
             
         }
 
-        uint8_t data, data1 = 0xAA;
-        
-        if(UART1_IsRxReady())
+        while(UART2_IsRxReady())
         {
-            data = UART1_Read();
-            if(data == data1){
-                WriteFlash();
-                asm("reset");       
+            dfu_buffer[count_dfu] = UART2_Read();
+            count_dfu = count_dfu + 1;
+            if(dfu_buffer[0] == 85 && dfu_buffer[1] == 170 && dfu_buffer[2] == 32)
+            {
+                if(dfu_buffer[4] == 17)
+                {
+                    count_dfu = 0;
+                    WriteFlash();
+                    asm("reset");
+                }
             }
         }
         

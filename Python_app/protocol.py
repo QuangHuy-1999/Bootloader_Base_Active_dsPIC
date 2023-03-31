@@ -18,6 +18,7 @@ class CommandCode(enum.IntEnum):
     RESET_DEVICE = 0x09
     SELF_VERIFY = 0x0A
     GET_MEMORY_ADDRESS_RANGE = 0x0B
+    DFU_REQUEST = 0x11
 
 
 class ResponseCode(enum.IntEnum):
