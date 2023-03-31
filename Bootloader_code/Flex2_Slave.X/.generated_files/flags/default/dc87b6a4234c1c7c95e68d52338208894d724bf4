@@ -1,0 +1,1 @@
+ -c -mcpu=$(MP_PROCESSOR_OPTION)  -omf=elf -DXPRJ_default=$(CND_CONF)    -Wa,-g,--no-relax$(MP_EXTRA_AS_POST) C:\Work_space_emotiv\Bootloader_Base_Active_dsPIC\Bootloader_code\Flex2_Slave.X\firlms_slave.s

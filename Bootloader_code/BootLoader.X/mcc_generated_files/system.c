@@ -202,21 +202,21 @@
 #include "clock.h"
 #include "system.h"
 #include "system_types.h"
-#include "interrupt_manager.h"
-#include "traps.h"
-#include "memory/flash.h"
-#include "boot/boot_process.h"
-#include "uart1.h"
 #include "uart2.h"
+#include "boot/boot_process.h"
+#include "memory/flash.h"
 #include "slave_typedef.h"
 #include "slave1.h"
+#include "uart1.h"
+#include "interrupt_manager.h"
+#include "traps.h"
 
 void SYSTEM_Initialize(void)
 {
     BOOT_Initialize();
     PIN_MANAGER_Initialize();
-    INTERRUPT_Initialize();
     CLOCK_Initialize();
+    INTERRUPT_Initialize();
     UART2_Initialize();
     SLAVE1_Initialize();
     UART1_Initialize();

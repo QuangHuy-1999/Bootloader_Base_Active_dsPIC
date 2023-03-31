@@ -1,1 +1,0 @@
- -c -mcpu=$(MP_PROCESSOR_OPTION)      -mno-eds-warn  -g -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)   -I"C:\Work_space_emotiv\Dspic_205\Flex2_Slave.X\dist\default\${IMAGE_TYPE}"  -mlarge-data -O0 -msmart-io=1 -Wall -msfr-warn=off   C:\Work_space_emotiv\Dspic_205\Flex2_Master.X\main.c

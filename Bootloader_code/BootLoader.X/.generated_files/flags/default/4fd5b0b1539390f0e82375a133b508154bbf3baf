@@ -1,0 +1,1 @@
+ -c -mcpu=$(MP_PROCESSOR_OPTION)  -omf=elf -DXPRJ_default=$(CND_CONF)     -I"C:\Work_space_emotiv\Dspic_205\Flex2_Slave.X\dist\default\${IMAGE_TYPE}"  -Wa,-g,--no-relax$(MP_EXTRA_AS_POST) C:\Work_space_emotiv\Bootloader_Base_Active_dsPIC\Bootloader_code\BootLoader.X\mcc_generated_files\boot\hardware_interrupt_table.S

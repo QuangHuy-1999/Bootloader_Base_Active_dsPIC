@@ -666,28 +666,28 @@ __FBTSEQ
 .comment
  *(.comment)
 
-.debug_info       0x000000       0x6876
+.debug_info       0x000000       0x6b0f
  *(.debug_info)
- .debug_info      0x000000        0x2fd build/default/production/mcc_generated_files/boot/com_adaptor_uart.o
- .debug_info      0x0002fd        0x238 build/default/production/mcc_generated_files/boot/boot_demo.o
- .debug_info      0x000535        0x514 build/default/production/mcc_generated_files/boot/boot_application_header.o
- .debug_info      0x000a49        0x64f build/default/production/mcc_generated_files/boot/boot_image.o
- .debug_info      0x001098        0xce0 build/default/production/mcc_generated_files/boot/boot_process.o
- .debug_info      0x001d78         0xad build/default/production/mcc_generated_files/boot/hardware_interrupt_table.o
- .debug_info      0x001e25         0x9e build/default/production/mcc_generated_files/boot/crc32_asm.o
- .debug_info      0x001ec3        0x32a build/default/production/mcc_generated_files/boot/boot_verify_crc32.o
- .debug_info      0x0021ed         0x9c build/default/production/mcc_generated_files/memory/flash.o
- .debug_info      0x002289        0x489 build/default/production/mcc_generated_files/reset.o
- .debug_info      0x002712        0x687 build/default/production/mcc_generated_files/clock.o
- .debug_info      0x002d99        0x1ef build/default/production/mcc_generated_files/interrupt_manager.o
- .debug_info      0x002f88        0x644 build/default/production/mcc_generated_files/pin_manager.o
- .debug_info      0x0035cc        0x5fe build/default/production/mcc_generated_files/traps.o
- .debug_info      0x003bca        0x520 build/default/production/mcc_generated_files/system.o
- .debug_info      0x0040ea       0x1175 build/default/production/mcc_generated_files/slave1.o
- .debug_info      0x00525f        0x9e9 build/default/production/mcc_generated_files/uart2.o
- .debug_info      0x005c48        0xa45 build/default/production/mcc_generated_files/uart1.o
- .debug_info      0x00668d        0x15d build/default/production/main.o
- .debug_info      0x0067ea         0x8c c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsi3.CH_o)
+ .debug_info      0x000000        0x320 build/default/production/mcc_generated_files/boot/com_adaptor_uart.o
+ .debug_info      0x000320        0x25b build/default/production/mcc_generated_files/boot/boot_demo.o
+ .debug_info      0x00057b        0x537 build/default/production/mcc_generated_files/boot/boot_application_header.o
+ .debug_info      0x000ab2        0x672 build/default/production/mcc_generated_files/boot/boot_image.o
+ .debug_info      0x001124        0xd03 build/default/production/mcc_generated_files/boot/boot_process.o
+ .debug_info      0x001e27         0xd0 build/default/production/mcc_generated_files/boot/hardware_interrupt_table.o
+ .debug_info      0x001ef7         0xc1 build/default/production/mcc_generated_files/boot/crc32_asm.o
+ .debug_info      0x001fb8        0x34d build/default/production/mcc_generated_files/boot/boot_verify_crc32.o
+ .debug_info      0x002305         0xbf build/default/production/mcc_generated_files/memory/flash.o
+ .debug_info      0x0023c4        0x4ac build/default/production/mcc_generated_files/reset.o
+ .debug_info      0x002870        0x6aa build/default/production/mcc_generated_files/clock.o
+ .debug_info      0x002f1a        0x212 build/default/production/mcc_generated_files/interrupt_manager.o
+ .debug_info      0x00312c        0x667 build/default/production/mcc_generated_files/pin_manager.o
+ .debug_info      0x003793        0x621 build/default/production/mcc_generated_files/traps.o
+ .debug_info      0x003db4        0x543 build/default/production/mcc_generated_files/system.o
+ .debug_info      0x0042f7       0x1198 build/default/production/mcc_generated_files/slave1.o
+ .debug_info      0x00548f        0xa0c build/default/production/mcc_generated_files/uart2.o
+ .debug_info      0x005e9b        0xa68 build/default/production/mcc_generated_files/uart1.o
+ .debug_info      0x006903        0x180 build/default/production/main.o
+ .debug_info      0x006a83         0x8c c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsi3.CH_o)
  *(.gnu.linkonce.wi.*)
 
 .debug_abbrev     0x000000       0x1059

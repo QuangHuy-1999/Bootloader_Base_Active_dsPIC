@@ -1,0 +1,1 @@
+ -c -mcpu=$(MP_PROCESSOR_OPTION)      -g -D__DEBUG   -mno-eds-warn  -omf=elf -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -O0 -msmart-io=1 -Wall -msfr-warn=off   C:\Work_space_emotiv\Bootloader_Base_Active_dsPIC\Bootloader_code\Flex2_Slave.X\mcc_generated_files\uart1.c

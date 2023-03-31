@@ -1,1 +1,0 @@
- -c -mcpu=$(MP_PROCESSOR_OPTION)  -omf=elf -DXPRJ_default=$(CND_CONF)     -I"C:\Work_space_emotiv\Dspic_205\Flex2_Slave.X\dist\default\${IMAGE_TYPE}"  -Wa,-g,--no-relax$(MP_EXTRA_AS_POST) C:\Work_space_emotiv\Dspic_205\Flex2_Master.X\mcc_generated_files\boot\user_interrupt_table.S
