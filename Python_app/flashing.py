@@ -4,10 +4,8 @@ import logging
 from typing import Union
 
 import progressbar  # type: ignore[import]
-
-# from mcbootflash.connection import Bootloader
 from com_app import Bootloader
-from mcbootflash.error import BootloaderError
+from error import BootloaderError
 
 _logger = logging.getLogger(__name__)
 
@@ -113,7 +111,7 @@ def flash(parsed_args: Union[None, argparse.Namespace] = None) -> None:
             baudrate=parsed_args.baudrate,
             timeout=parsed_args.timeout,
         )
-        boot.flash(hexfile=parsed_args.file, quiet=parsed_args.quiet)
+        boot.flash(hexfile=parsed_args.file)
     except BootloaderError as exc:
         print(
             "\nFlashing failed:",
