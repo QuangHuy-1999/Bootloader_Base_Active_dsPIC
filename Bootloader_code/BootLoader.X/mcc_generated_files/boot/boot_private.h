@@ -58,11 +58,12 @@ Copyright (c) [2012-2023] Microchip Technology Inc.
 #include "boot_config.h" 
 #define MINIMUM_WRITE_BLOCK_SIZE 8u
 
-#define SIZE_OF_CMD_STRUCT_0 14
+#define SIZE_OF_CMD_STRUCT_0 15
 struct __attribute__((__packed__)) CMD_STRUCT_0{
     uint8_t header1;
     uint8_t header2;
     uint8_t header3;
+    uint8_t total_length;
     uint8_t cmd;
     uint16_t dataLength;
     uint32_t unlockSequence;
@@ -73,6 +74,7 @@ struct __attribute__((__packed__)) CMD_STRUCT_0_WITH_PAYLOAD{
     uint8_t header1;
     uint8_t header2;
     uint8_t header3;
+    uint8_t total_length;
     uint8_t cmd;
     uint16_t dataLength;
     uint32_t unlockSequence;
@@ -84,6 +86,7 @@ struct __attribute__((__packed__)) GET_VERSION_RESPONSE{
     uint8_t header1;
     uint8_t header2;
     uint8_t header3;
+    uint8_t total_length;
     uint8_t cmd;
     uint16_t dataLength;
     uint32_t unlockSequence;
@@ -105,6 +108,7 @@ struct __attribute__((__packed__)) RESPONSE_TYPE_0{
     uint8_t header1;
     uint8_t header2;
     uint8_t header3;
+    uint8_t total_length;
     uint8_t cmd;
     uint16_t dataLength;
     uint32_t unlockSequence;
@@ -116,6 +120,7 @@ struct __attribute__((__packed__)) RESPONSE_TYPE_0_2_PAYLOAD{
     uint8_t header1;
     uint8_t header2;
     uint8_t header3;
+    uint8_t total_length;
     uint8_t cmd;
     uint16_t dataLength;
     uint32_t unlockSequence;
@@ -128,6 +133,7 @@ struct __attribute__((__packed__)) RESPONSE_TYPE_0_WITH_PAYLOAD{
     uint8_t header1;
     uint8_t header2;
     uint8_t header3;
+    uint8_t total_length;
     uint8_t cmd;
     uint16_t dataLength;
     uint32_t unlockSequence;
@@ -140,6 +146,7 @@ struct __attribute__((__packed__)) GET_MEMORY_ADDRESS_RANGE_RESPONSE{
     uint8_t header1;
     uint8_t header2;
     uint8_t header3;
+    uint8_t total_length;
     uint8_t  cmd;
     uint16_t dataLength;  
     uint32_t unlockSequence; 

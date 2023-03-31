@@ -2,8 +2,7 @@
 # import logging
 from struct import error as structerror
 from typing import Any, Dict, Generator, List, Tuple, Type, Union
-
-import progressbar  # type: ignore[import]
+import argparse
 from intelhex import IntelHex  # type: ignore[import]
 from serial import Serial  # type: ignore[import]
 
@@ -26,9 +25,6 @@ from protocol import (
     Version,
 )
 
-# from mcbootflash.protocol import (Header)
-
-# _logger = logging.getLogger(__name__)
 
 _BOOTLOADER_EXCEPTIONS: Dict[ResponseCode, Type[BootloaderError]] = {
     ResponseCode.UNSUPPORTED_COMMAND: UnsupportedCommand,
@@ -65,8 +61,8 @@ class Bootloader:
     # If this key is incorrect, flash write operations will fail silently.
     _FLASH_UNLOCK_KEY = 0x00AA0055
 
-    def __init__(self, port: str, **kwargs: Any):
-        self.interface = Serial(port=port, **kwargs)
+    def __init__(self, port: str, baudrate: int,    **kwargs: Any):
+        self.interface = Serial(port=port, baudrate=baudrate, **kwargs)
         # _logger.info("Connecting to bootloader...")
         print("Connecting to bootloader...")
         try:
@@ -197,7 +193,7 @@ class Bootloader:
     def _send_and_receive(self, command: Command, data: bytes = b"") -> ResponseBase:
         self.interface.write(bytes(command) + data)
         response = _RESPONSE_TYPE_MAP[command.command].from_serial(self.interface)
-        # print("Response: ", response)
+        print("Response: ", response)
         self._verify_good_response(command, response)
         return response
 
@@ -268,7 +264,10 @@ class Bootloader:
                 header1=Header.header1,
                 header2=Header.header2,
                 header3=Header.header3,
-                command= CommandCode.GET_MEMORY_ADDRESS_RANGE)
+                command= CommandCode.GET_MEMORY_ADDRESS_RANGE,
+                data_length=0,
+                unlock_sequence=self._FLASH_UNLOCK_KEY,
+                address=0)
         )
         assert isinstance(mem_range_response, MemoryRange)
 
@@ -320,6 +319,7 @@ class Bootloader:
                 header1=Header.header1,
                 header2=Header.header2,
                 header3=Header.header3,
+                total_length=15,
                 command=CommandCode.ERASE_FLASH,
                 data_length=(end_address - start_address) // self._erase_size,
                 unlock_sequence=self._FLASH_UNLOCK_KEY,
@@ -355,6 +355,7 @@ class Bootloader:
                 header1=Header.header1,
                 header2=Header.header2,
                 header3=Header.header3,
+                total_length=len(data) + len(padding) + 15,
                 command=CommandCode.WRITE_FLASH,
                 data_length=len(data) + len(padding),
                 unlock_sequence=self._FLASH_UNLOCK_KEY,
@@ -431,5 +432,5 @@ class Bootloader:
         raise NotImplementedError
 
 
-bootloader_dsPIC = Bootloader("COM41")
+bootloader_dsPIC = Bootloader("COM41", 9600)
 bootloader_dsPIC.flash("C:/Users/Admin/AppData/Local/Programs/Python/Python38/Bootloader_uart/Flex2_Master.X.production.hex")

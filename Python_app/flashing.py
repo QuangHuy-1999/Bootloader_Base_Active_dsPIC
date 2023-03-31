@@ -122,3 +122,4 @@ def flash(parsed_args: Union[None, argparse.Namespace] = None) -> None:
         logging.debug(exc, exc_info=True)
 
 
+flash()

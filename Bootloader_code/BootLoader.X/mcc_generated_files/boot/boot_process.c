@@ -131,31 +131,25 @@ enum BOOT_COMMAND_RESULT BOOT_ProcessCommand(void)
     uint8_t command;
     uint16_t command_length;
     
-    //printf("ha");
     if (bytes_ready == 0u) 
     {
-        //printf("No thing\n");
         return BOOT_COMMAND_NONE; 
     }
 
     if (bytes_ready < sizeof(struct CMD_STRUCT_0)) 
     { 
-        //printf("Error\n");
         return BOOT_COMMAND_INCOMPLETE; 
     }
     
-    command = BOOT_COM_Peek(3);
-
+    command = BOOT_COM_Peek(4);
+//    printf("command: 0x%02x",  command);
     // validate the length of the command will not exceed the buffer size
-    command_length = BOOT_COM_Peek(4u) + BOOT_COM_Peek(5u)*256u + sizeof(struct CMD_STRUCT_0);
-    //printf("command_length: %d\n", command_length);
+    command_length = BOOT_COM_Peek(5u) + BOOT_COM_Peek(6u)*256u + sizeof(struct CMD_STRUCT_0);
     if ( ( command_length > BOOT_CONFIG_MAX_PACKET_SIZE ) && ( command != ERASE_FLASH ) )
     {
         return CommandError(BAD_LENGTH);
     }
     
-    //printf("Command: 0x%02x\n", command);
-    //printf("Command: 0x%02x ", command);
     switch (command)
     {
         
@@ -219,6 +213,9 @@ static enum BOOT_COMMAND_RESULT CommandError(enum BOOT_COMMAND_RESPONSES errorTy
 static enum BOOT_COMMAND_RESULT ReadVersion(void)
 {
     struct GET_VERSION_RESPONSE response = {
+        .header1 = 0xAA,
+        .header2 = 0xBB,
+        .header3 = 0xCC,
         .cmd = 0,
         .dataLength = 0,
         .unlockSequence = 0,
@@ -274,25 +271,22 @@ static enum BOOT_COMMAND_RESULT EraseFlash(void)
     (void)BOOT_COM_Read(commandArray, sizeof(struct CMD_STRUCT_0));
             
     memcpy(&response, commandArray, sizeof(struct CMD_STRUCT_0));
-
+    response.total_length = 0x10;
     eraseAddress = pCommand->address;
     
     response.success = BAD_ADDRESS;
     if ( BOOT_BlockErase(pCommand->address, pCommand->dataLength, pCommand->unlockSequence) == NVM_SUCCESS)
     {
-        //printf("Erase block \n");
         response.success = COMMAND_SUCCESS;
     }     
     
     BOOT_COM_Write((uint8_t*) & response, sizeof (struct RESPONSE_TYPE_0) / sizeof (uint8_t));
-    //printf("Result: 0x%02x: ", response.success);
 
     /* destroy the unlock key so it isn't sitting around in memory. */
     pCommand->unlockSequence = ~pCommand->unlockSequence;
     
     if(response.success == COMMAND_SUCCESS)
     {
-        //printf("Erase success\n");
         return BOOT_COMMAND_SUCCESS;
     }
     
@@ -306,24 +300,18 @@ static enum BOOT_COMMAND_RESULT WriteFlash(void)
     uint32_t flashAddress;   
     uint16_t dataLength;
     
-    dataLength = BOOT_COM_Peek(5u)<<8u;
-    dataLength |= BOOT_COM_Peek(4u);
+    dataLength = BOOT_COM_Peek(6u)<<8u;
+    dataLength |= BOOT_COM_Peek(5u);
     
-    //printf("Data_length: %d", dataLength);
     if (BOOT_COM_GetBytesReady() < (sizeof(struct CMD_STRUCT_0) + dataLength))
     { 
-        //printf("SIze: %d\n", BOOT_COM_GetBytesReady());
         return BOOT_COMMAND_INCOMPLETE; 
     }  
     
     (void)BOOT_COM_Read(commandArray, sizeof(struct CMD_STRUCT_0) + dataLength);
-//    for(uint8_t i = 0; i < sizeof(struct CMD_STRUCT_0) + dataLength + 1; i++)
-//    {
-//        printf("Data_array %d: 0x%02x", i+1, commandArray[i]);
-//    }
-
-    memcpy(&response, commandArray, sizeof(struct CMD_STRUCT_0));
     
+    memcpy(&response, commandArray, sizeof(struct CMD_STRUCT_0));
+    response.total_length = 0x10;
     response.success = COMMAND_SUCCESS;
 
     flashAddress = pCommand->address;
@@ -333,7 +321,6 @@ static enum BOOT_COMMAND_RESULT WriteFlash(void)
     {
         if (BOOT_BlockWrite(pCommand->address, dataLength, &pCommand->data[0], pCommand->unlockSequence) != NVM_SUCCESS)
         {
-            //printf("Bad Address \n");
             response.success = BAD_ADDRESS;   
         } 
     }   
@@ -349,7 +336,6 @@ static enum BOOT_COMMAND_RESULT WriteFlash(void)
     
     if(response.success == COMMAND_SUCCESS)
     {
-        //printf("Write success \n");
         return BOOT_COMMAND_SUCCESS;
     }
     
@@ -463,9 +449,9 @@ static enum BOOT_COMMAND_RESULT SelfVerify(void)
 static enum BOOT_COMMAND_RESULT GetMemoryAddressRange(void)
 {
    struct GET_MEMORY_ADDRESS_RANGE_RESPONSE response = {
-       .header1 = 0xAA,
-       .header2 = 0xBB,
-       .header3 = 0xCC,
+        .header1 = 0xAA,
+        .header2 = 0xBB,
+        .header3 = 0xCC,
         .cmd = 0xB,
         .dataLength = 0x8,
         .unlockSequence = 0x0,

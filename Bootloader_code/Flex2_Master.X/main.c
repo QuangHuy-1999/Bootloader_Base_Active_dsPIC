@@ -109,7 +109,7 @@ int main(void)
     
     while (1)
     {
-        printf("Hello a Son");
+        printf("Hello a Vinh\n");
         if(BUF_1024_Head != BUF_1024_Tail)
         {
             //uint16_t check_Counter;

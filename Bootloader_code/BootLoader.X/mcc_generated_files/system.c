@@ -202,14 +202,14 @@
 #include "clock.h"
 #include "system.h"
 #include "system_types.h"
-#include "memory/flash.h"
-#include "boot/boot_process.h"
 #include "interrupt_manager.h"
 #include "traps.h"
+#include "memory/flash.h"
+#include "boot/boot_process.h"
 #include "uart1.h"
+#include "uart2.h"
 #include "slave_typedef.h"
 #include "slave1.h"
-#include "uart2.h"
 
 void SYSTEM_Initialize(void)
 {
@@ -217,8 +217,8 @@ void SYSTEM_Initialize(void)
     PIN_MANAGER_Initialize();
     INTERRUPT_Initialize();
     CLOCK_Initialize();
-    SLAVE1_Initialize();
     UART2_Initialize();
+    SLAVE1_Initialize();
     UART1_Initialize();
     INTERRUPT_GlobalEnable();
     SYSTEM_CORCONModeOperatingSet(CORCON_MODE_PORVALUES);

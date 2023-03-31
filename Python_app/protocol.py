@@ -30,9 +30,10 @@ class ResponseCode(enum.IntEnum):
     VERIFY_FAIL = 0xFC
 
 class Header(enum.IntEnum):
-    header1 = 0xAA
-    header2 = 0xBB
-    header3 = 0xCC
+    header1 = 0x55
+    header2 = 0xAA
+    header3 = 0x20
+    total_length = 0 
 
 _P = TypeVar("_P", bound="Packet")
 
@@ -43,8 +44,8 @@ class Packet:
 
     Layout::
 
-        |  uint8  |  uint8  |  uint8  |  uint8   | uint16      | uint32          | uint32   |
-        | header1 | header2 | header3 |  command | data_length | unlock_sequence | address  |
+            uint8  |  uint8  |  uint8  |  uint8  |  uint8   | uint16      | uint32          | uint32   |
+           header1 | header1 | header2 |  total  |  command | data_length | unlock_sequence | address  |
 
     Parameters
     ----------
@@ -79,11 +80,12 @@ class Packet:
     header1: Header
     header2: Header
     header3: Header
+    total_length: Header
     command: CommandCode
     data_length: int = 0
     unlock_sequence: int = 0
     address: int = 0
-    FORMAT: ClassVar[str] = "=BBBBH2I"
+    FORMAT: ClassVar[str] = "=BBBBBH2I"
 
     def __bytes__(self) -> bytes:  # noqa: D105
         return struct.pack(self.FORMAT, *list(asdict(self).values()))

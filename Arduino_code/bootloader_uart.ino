@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
-#define header1 170
-#define header2 187
-#define header3 204
+#define header1 85
+#define header2 170
+#define header3 32
 
 /*
  * Config serial RX/TX Arduino
@@ -37,9 +37,9 @@ void loop()
       count_PC = count_PC + 1;
       if(buffer_PC[0] == header1 && buffer_PC[1] == header2 && buffer_PC[2] == header3)
       {
-          if(buffer_PC[3] == 0 || buffer_PC[3] == 10 || buffer_PC[3] == 11)
+          if(buffer_PC[4] == 0 || buffer_PC[4] == 8 || buffer_PC[4] == 11)
           {
-              if(count_PC == 4)
+              if(count_PC == 10)
               {  
                     for(uint8_t i = 0; i < count_PC; i++)
                     {
@@ -54,9 +54,9 @@ void loop()
               }
           }
           
-          else if(buffer_PC[3] == 3)
+          else if(buffer_PC[4] == 3)
           {
-              if(count_PC == 14)
+              if(count_PC == buffer_PC[3])
               { 
                   for(uint8_t i = 0; i < count_PC; i++)
                   {
@@ -72,9 +72,9 @@ void loop()
               }
           }
           
-          else if(buffer_PC[3] == 2)
+          else if(buffer_PC[4] == 2)
           {
-              if(count_PC == (buffer_PC[4] + 14))
+              if(count_PC == (buffer_PC[5] + 15))
               {
                     for(uint8_t i = 0; i < count_PC; i++)
                     {
@@ -100,7 +100,7 @@ void loop()
       count_dsPIC = count_dsPIC + 1;
       if( buffer_dsPIC[0] == header1 &&  buffer_dsPIC[1] == header2 &&  buffer_dsPIC[2] == header3)
       {
-          if(buffer_dsPIC[3] == 10)
+          if(buffer_dsPIC[4] == 8)
           {
               if(count_dsPIC == 17)
               {
@@ -117,9 +117,9 @@ void loop()
               }
           }
 
-          else if(buffer_dsPIC[3] == 3)
+          else if(buffer_dsPIC[4] == 3)
           {
-              if(count_dsPIC == 15)
+              if(count_dsPIC == 16)
               {
                   for(uint8_t i = 0; i < count_dsPIC; i++)
                   {
@@ -134,14 +134,16 @@ void loop()
               }
           }
 
-          else if(buffer_dsPIC[3] == 2)
+          else if(buffer_dsPIC[4] == 2)
           {
-              if(count_dsPIC == 15)
+              if(count_dsPIC == 16)
               {
                   for(uint8_t i = 0; i < count_dsPIC; i++)
                   {
                       Serial.write(buffer_dsPIC[i]);
                   }
+
+//                  Serial.write(buffer_dsPIC, 15);
 
                   for(uint8_t i = 0; i < count_dsPIC; i++)
                   {
