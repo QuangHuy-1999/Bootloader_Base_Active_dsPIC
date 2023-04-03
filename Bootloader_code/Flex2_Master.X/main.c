@@ -52,6 +52,7 @@
 #include "mcc_generated_files/pin_manager.h"
 #include "mcc_generated_files/mcc.h"
 #include "mcc_generated_files/memory/flash.h"
+#include "response_packet.h"
 #include "readADC.h"
 #include "FIR_Filter.h"
 #include "IIR_Filter.h"
@@ -68,16 +69,14 @@ extern volatile uint16_t EEG_2SEND[ADCMAXBUFFER][36];
 extern volatile uint16_t EEG_BUF_1024HZ[ADCMAXBUFFER][36]; 
 extern unsigned char BUF_1024_Head;
 extern unsigned char BUF_1024_Tail;
-uint8_t dfu_buffer[5];
-uint8_t count_dfu = 0;
-
+uint8_t DATA_FROM_NRF_BUF[5];
+uint8_t count_data_from_nrf = 0;
 /*
                          Main application
  */
 
 void WriteFlash(){
     uint32_t write_data[2];
-    
     FLASH_Unlock(FLASH_UNLOCK_KEY);
     FLASH_ErasePage(ADRESSFLASH);
     write_data[0] = 0x00112233;
@@ -85,6 +84,19 @@ void WriteFlash(){
     FLASH_WriteDoubleWord24(ADRESSFLASH, write_data[0], write_data[1]);
     FLASH_Lock();
     
+}
+
+void APP_UART2_Write(uint8_t* data, uint16_t length)
+{
+    while(length)
+    {
+        if (UART2_IsTxReady())
+        {
+            UART2_Write(*data++);
+            length--;
+        }
+    }
+    while (UART2_IsTxDone()==false);  
 }
 
 int main(void)
@@ -111,7 +123,7 @@ int main(void)
     
     while (1)
     {
-        printf("Hello a Vinh\n");
+        printf("Hello a Lam\n");
         __delay_ms(100);
         if(BUF_1024_Head != BUF_1024_Tail)
         {
@@ -146,14 +158,28 @@ int main(void)
 
         while(UART2_IsRxReady())
         {
-            dfu_buffer[count_dfu] = UART2_Read();
-            count_dfu = count_dfu + 1;
-            if(dfu_buffer[0] == 85 && dfu_buffer[1] == 170 && dfu_buffer[2] == 32)
+            DATA_FROM_NRF_BUF[count_data_from_nrf] = UART2_Read();
+            count_data_from_nrf++;
+            if(DATA_FROM_NRF_BUF[0] == 85 && DATA_FROM_NRF_BUF[1] == 170 && DATA_FROM_NRF_BUF[2] == 32)
             {
-                if(dfu_buffer[4] == 17)
+                if(DATA_FROM_NRF_BUF[4] == 17)
                 {
-                    count_dfu = 0;
-                    WriteFlash();
+                    struct DFU_STRUCT_RESPONSE response = {
+                        .header1 = 0x55,
+                        .header2 = 0xAA,
+                        .header3 = 0x20,
+                        .total_length = 0x2,
+                        .cmd = 0x11,
+                        .dataLength = 0,
+                        .unlockSequence = 0,
+                        .address = 0,
+                        
+                        .success = 0x01
+                    };
+                    
+                    WriteFlash();                   
+                    APP_UART2_Write((uint8_t*) & response, sizeof (struct DFU_STRUCT_RESPONSE) / sizeof (uint8_t));
+                    count_data_from_nrf = 0;
                     asm("reset");
                 }
             }

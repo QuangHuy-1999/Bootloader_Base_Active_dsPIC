@@ -34,6 +34,7 @@
       <itemPath>readADC.h</itemPath>
       <itemPath>FIR_Filter.h</itemPath>
       <itemPath>IIR_Filter.h</itemPath>
+      <itemPath>response_packet.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"

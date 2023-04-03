@@ -107,18 +107,18 @@ void PIN_MANAGER_Initialize (void)
      ***************************************************************************/
     __builtin_write_RPCON(0x0000); // unlock PPS
 
+    RPINR18bits.U1RXR = 0x003A;    //RC10->UART1:U1RX
+    RPOR8bits.RP49R = 0x0003;    //RC1->UART2:U2TX
+    RPINR20bits.SCK1R = 0x002E;    //RB14->SPI1:SCK1
+    RPOR7bits.RP46R = 0x0006;    //RB14->SPI1:SCK1
+    RPOR11bits.RP55R = 0x0001;    //RC7->UART1:U1TX
+    RPOR12bits.RP56R = 0x0009;    //RC8->SPI2:SCK2
+    RPINR22bits.SCK2R = 0x0038;    //RC8->SPI2:SCK2
     RPOR7bits.RP47R = 0x000A;    //RB15->SPI2:SS2
+    RPINR19bits.U2RXR = 0x0030;    //RC0->UART2:U2RX
+    RPOR6bits.RP44R = 0x0007;    //RB12->SPI1:SS1
     RPINR22bits.SDI2R = 0x0039;    //RC9->SPI2:SDI2
     RPINR20bits.SDI1R = 0x002D;    //RB13->SPI1:SDI1
-    RPOR7bits.RP46R = 0x0006;    //RB14->SPI1:SCK1
-    RPOR12bits.RP56R = 0x0009;    //RC8->SPI2:SCK2
-    RPINR18bits.U1RXR = 0x003A;    //RC10->UART1:U1RX
-    RPINR19bits.U2RXR = 0x0030;    //RC0->UART2:U2RX
-    RPINR20bits.SCK1R = 0x002E;    //RB14->SPI1:SCK1
-    RPINR22bits.SCK2R = 0x0038;    //RC8->SPI2:SCK2
-    RPOR6bits.RP44R = 0x0007;    //RB12->SPI1:SS1
-    RPOR8bits.RP49R = 0x0003;    //RC1->UART2:U2TX
-    RPOR11bits.RP55R = 0x0001;    //RC7->UART1:U1TX
 
     __builtin_write_RPCON(0x0800); // lock PPS
 }

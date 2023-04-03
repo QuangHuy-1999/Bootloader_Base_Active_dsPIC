@@ -99,6 +99,13 @@ enum BOOT_COMMAND
     GET_MEMORY_ADDRESS_RANGE_COMMAND = 0x0B
 };
 
+enum Header
+{
+    HEADER1 = 0x55,
+    HEADER2 = 0xAA,
+    HEADER3 = 0x20,
+};
+
 
 
 /******************************************************************************/
@@ -142,7 +149,6 @@ enum BOOT_COMMAND_RESULT BOOT_ProcessCommand(void)
     }
     
     command = BOOT_COM_Peek(4);
-//    printf("command: 0x%02x",  command);
     // validate the length of the command will not exceed the buffer size
     command_length = BOOT_COM_Peek(5u) + BOOT_COM_Peek(6u)*256u + sizeof(struct CMD_STRUCT_0);
     if ( ( command_length > BOOT_CONFIG_MAX_PACKET_SIZE ) && ( command != ERASE_FLASH ) )
@@ -213,9 +219,10 @@ static enum BOOT_COMMAND_RESULT CommandError(enum BOOT_COMMAND_RESPONSES errorTy
 static enum BOOT_COMMAND_RESULT ReadVersion(void)
 {
     struct GET_VERSION_RESPONSE response = {
-        .header1 = 0xAA,
-        .header2 = 0xBB,
-        .header3 = 0xCC,
+        .header1 = HEADER1,
+        .header2 = HEADER2,
+        .header3 = HEADER3,
+        .total_length = 0x25,
         .cmd = 0,
         .dataLength = 0,
         .unlockSequence = 0,
@@ -246,6 +253,10 @@ static void Reset(void){
 static void ResetDevice(void)
 {
     struct RESPONSE_TYPE_0 response = {
+        .header1 = HEADER1,
+        .header2 = HEADER2,
+        .header3 = HEADER3,
+        .total_length = 0xC,
         .cmd = 9,
         .dataLength = 0,
         .unlockSequence = 0,
@@ -271,7 +282,7 @@ static enum BOOT_COMMAND_RESULT EraseFlash(void)
     (void)BOOT_COM_Read(commandArray, sizeof(struct CMD_STRUCT_0));
             
     memcpy(&response, commandArray, sizeof(struct CMD_STRUCT_0));
-    response.total_length = 0x10;
+    response.total_length = 0x0C;
     eraseAddress = pCommand->address;
     
     response.success = BAD_ADDRESS;
@@ -311,7 +322,7 @@ static enum BOOT_COMMAND_RESULT WriteFlash(void)
     (void)BOOT_COM_Read(commandArray, sizeof(struct CMD_STRUCT_0) + dataLength);
     
     memcpy(&response, commandArray, sizeof(struct CMD_STRUCT_0));
-    response.total_length = 0x10;
+    response.total_length = 0x0C;
     response.success = COMMAND_SUCCESS;
 
     flashAddress = pCommand->address;
@@ -449,9 +460,10 @@ static enum BOOT_COMMAND_RESULT SelfVerify(void)
 static enum BOOT_COMMAND_RESULT GetMemoryAddressRange(void)
 {
    struct GET_MEMORY_ADDRESS_RANGE_RESPONSE response = {
-        .header1 = 0xAA,
-        .header2 = 0xBB,
-        .header3 = 0xCC,
+        .header1 = HEADER1,
+        .header2 = HEADER2,
+        .header3 = HEADER3,
+        .total_length = 0x14,
         .cmd = 0xB,
         .dataLength = 0x8,
         .unlockSequence = 0x0,

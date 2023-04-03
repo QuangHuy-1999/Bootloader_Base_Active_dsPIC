@@ -202,16 +202,16 @@
 #include "clock.h"
 #include "system.h"
 #include "system_types.h"
-#include "sccp2_tmr.h"
-#include "interrupt_manager.h"
-#include "traps.h"
+#include "memory/flash.h"
+#include "uart1.h"
 #include "spi2.h"
 #include "spi1.h"
-#include "memory/flash.h"
-#include "uart2.h"
-#include "uart1.h"
 #include "slave_typedef.h"
 #include "slave1.h"
+#include "sccp2_tmr.h"
+#include "uart2.h"
+#include "interrupt_manager.h"
+#include "traps.h"
 
 void SYSTEM_Initialize(void)
 {
@@ -219,8 +219,8 @@ void SYSTEM_Initialize(void)
     CLOCK_Initialize();
     INTERRUPT_Initialize();
     SCCP2_TMR_Initialize();
-    UART2_Initialize();
     SLAVE1_Initialize();
+    UART2_Initialize();
     SPI1_Initialize();
     SPI2_Initialize();
     UART1_Initialize();

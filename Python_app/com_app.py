@@ -5,6 +5,7 @@ from typing import Any, Dict, Generator, List, Tuple, Type, Union
 import argparse
 from intelhex import IntelHex  # type: ignore[import]
 from serial import Serial  # type: ignore[import]
+import time
 
 from error import (
     BadAddress,
@@ -42,6 +43,7 @@ _RESPONSE_TYPE_MAP: Dict[CommandCode, Type[ResponseBase]] = {
     CommandCode.RESET_DEVICE: Response,
     CommandCode.SELF_VERIFY: Response,
     CommandCode.GET_MEMORY_ADDRESS_RANGE: MemoryRange,
+    CommandCode.DFU_REQUEST: Response
 }
 
 
@@ -61,31 +63,20 @@ class Bootloader:
     # If this key is incorrect, flash write operations will fail silently.
     _FLASH_UNLOCK_KEY = 0x00AA0055
 
-    def __init__(self, port: str, baudrate: int,    **kwargs: Any):
+    def __init__(self, port: str, baudrate: int, **kwargs: Any):
         self.interface = Serial(port=port, baudrate=baudrate, **kwargs)
-        # _logger.info("Connecting to bootloader...")
         print("Connecting to bootloader...")
+        self._dfu_request()
+        time.sleep(1)
         try:
-            # (
-            #     _,  # version
-            #     self._max_packet_length,
-            #     _,  # device_id
-            #     self._erase_size,
-            #     self._write_size,
-            # ) = self._read_version()
-            #self._memory_range = range(*self._get_memory_address_range())
-        
-            self._memory_range = range(0x005000,0x0577fe)
+            self._memory_range = range(*self._get_memory_address_range())
             self._erase_size = 2048
             self._FLASH_UNLOCK_KEY = 0x00AA0055
             self._max_packet_length = 0x100
             self._write_size = 8
-            # self._header = 0
-            # self.ab = 0
         except structerror as exc:
             raise BootloaderError("No response from bootloader") from exc
-        # _logger.info("Connected")
-        self._bar = None
+        print("Connected")
 
     def flash(self, hexfile: str, quiet: bool = False) -> None:
         """Flash application firmware.
@@ -102,7 +93,7 @@ class Bootloader:
         BootloaderError
             If HEX-file cannot be flashed.
         """
-        self._dfu_request()
+        #self._dfu_request()
         path = hexfile
         hexfile = IntelHex(path)
         segments = self._get_segments_in_range(hexfile, self._memory_range)
@@ -113,7 +104,6 @@ class Bootloader:
             )
 
         self.erase_flash(self._memory_range)
-        # _logger.info(f"Flashing {path}")
         chunk_size = self._max_packet_length - Command.get_size()
         chunk_size -= chunk_size % self._write_size
         total_bytes = sum(len(segment) for segment in segments)
@@ -122,21 +112,15 @@ class Bootloader:
         for segment in segments:
             chunks = self._chunk(segment, chunk_size)
             print("Flashing segment: ", segments.index(segment))
-            # _logger.debug(f"Flashing segment {segments.index(segment)}")
 
             for chunk in chunks:
                 self._write_flash(chunk, self._write_size)
                 written_bytes += len(chunk)
                 print(written_bytes," bytes written of ", total_bytes)
                 print("%.2f" % (written_bytes/total_bytes*100), "%")
-                #self._checksum(chunk)
+                self._checksum(chunk)
 
-                # if not quiet:
-                #     self._print_progress(written_bytes, total_bytes)
-        
-        # self.reset()
-
-        # self._self_verify()
+        self._self_verify()
 
     @staticmethod
     def _get_segments_in_range(
@@ -164,29 +148,9 @@ class Bootloader:
         stop = hexfile.maxaddr()
         return (hexfile[i : i + size] for i in range(start, stop, size))
 
-    # def _print_progress(self, written_bytes: int, total_bytes: int) -> None:
-    #     if self._bar is None:
-    #         widgets = [
-    #             progressbar.Percentage(),
-    #             " ",
-    #             progressbar.DataSize(),
-    #             " ",
-    #             progressbar.Bar(),
-    #             " ",
-    #             progressbar.Timer(),
-    #         ]
-    #         progress = progressbar.ProgressBar(widgets=widgets)
-    #         self._bar = progress.start(max_value=total_bytes)
-    #     elif written_bytes == total_bytes:
-    #         self._bar.finish()
-    #         self._bar = None
-    #     else:
-    #         self._bar.update(value=written_bytes)
-
     def _send_and_receive(self, command: Command, data: bytes = b"") -> ResponseBase:
         self.interface.write(bytes(command) + data)
         response = _RESPONSE_TYPE_MAP[command.command].from_serial(self.interface)
-        print("Response: ", response)
         self._verify_good_response(command, response)
         return response
 
@@ -235,6 +199,7 @@ class Bootloader:
                 header1=Header.header1,
                 header2=Header.header2,
                 header3=Header.header3,
+                total_length=1,
                 command= CommandCode.READ_VERSION)
         )
         assert isinstance(read_version_response, Version)
@@ -257,10 +222,8 @@ class Bootloader:
                 header1=Header.header1,
                 header2=Header.header2,
                 header3=Header.header3,
-                command= CommandCode.GET_MEMORY_ADDRESS_RANGE,
-                data_length=0,
-                unlock_sequence=self._FLASH_UNLOCK_KEY,
-                address=0)
+                total_length=1,
+                command= CommandCode.GET_MEMORY_ADDRESS_RANGE)
         )
         assert isinstance(mem_range_response, MemoryRange)
 
@@ -291,19 +254,16 @@ class Bootloader:
         """
         start, *_, end = erase_range if erase_range else self._memory_range
 
-        if(1):
+        if(True):
             print("Erasing flash...")
             self._erase_flash(start, end)
-        # else:
-        #     _logger.info("No application detected, skipping flash erase")
-        #     return
 
-        # if verify:
-        #     if self._detect_program():
-        #         print("An application was detected; flash erase failed")
-        #         print("unlock_sequence field may be incorrect")
-        #         raise BootloaderError("Existing application could not be erased")
-        #     print("No application detected; flash erase successful")
+        if verify:
+            if self._detect_program():
+                print("An application was detected; flash erase failed")
+                print("unlock_sequence field may be incorrect")
+                raise BootloaderError("Existing application could not be erased")
+            print("No application detected; flash erase successful")
 
     def _erase_flash(self, start_address: int, end_address: int) -> None:
         print("Erasing addresses: {:#08x}".format(start_address), "->" , "{:#08x}".format(end_address))
@@ -312,7 +272,7 @@ class Bootloader:
                 header1=Header.header1,
                 header2=Header.header2,
                 header3=Header.header3,
-                total_length=15,
+                total_length=11,
                 command=CommandCode.ERASE_FLASH,
                 data_length=(end_address - start_address) // self._erase_size,
                 unlock_sequence=self._FLASH_UNLOCK_KEY,
@@ -341,14 +301,13 @@ class Bootloader:
             max_packet_length attribute.
         """
         padding = bytes([data.padding] * ((align - (len(data) % align)) % align))
-        # _logger.debug(f"Writing {len(data)} bytes to {data.minaddr():#08x}")
         print("Writing ", len(data), "bytes to", "{:#08x}".format(data.minaddr()))
         self._send_and_receive(
             Command(
                 header1=Header.header1,
                 header2=Header.header2,
                 header3=Header.header3,
-                total_length=len(data) + len(padding) + 15,
+                total_length=len(data) + len(padding) + 11,
                 command=CommandCode.WRITE_FLASH,
                 data_length=len(data) + len(padding),
                 unlock_sequence=self._FLASH_UNLOCK_KEY,
@@ -358,12 +317,14 @@ class Bootloader:
         )
 
     def _dfu_request(self) -> None:
-        self.interface.write(bytes(Command(
+        print("DFU request")
+        self._send_and_receive(
+            Command(
                 header1=Header.header1,
                 header2=Header.header2,
                 header3=Header.header3,
-                total_length=5,
-                command=CommandCode.DFU_REQUEST)))
+                total_length=1,
+                command=CommandCode.DFU_REQUEST))
 
     def _self_verify(self) -> None:
         self._send_and_receive(
@@ -371,6 +332,7 @@ class Bootloader:
                 header1=Header.header1,
                 header2=Header.header2,
                 header3=Header.header3,
+                total_length=1,
                 command=CommandCode.SELF_VERIFY))
         print("Self verify OK")
 
@@ -380,6 +342,7 @@ class Bootloader:
                 header1=Header.header1,
                 header2=Header.header2,
                 header3=Header.header3,
+                total_length=7,
                 command=CommandCode.CALC_CHECKSUM,
                 data_length=length,
                 address=address,
@@ -427,9 +390,9 @@ class Bootloader:
         self._send_and_receive(
             Command(
                 header1=Header.header1,
-                header2=Header.header2,
+                header2=Header.header2, 
                 header3=Header.header3,
-                total_length=5,
+                total_length=1,
                 command=CommandCode.RESET_DEVICE))
         print("Device reset")
 
