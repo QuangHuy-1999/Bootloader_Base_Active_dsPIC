@@ -92,16 +92,8 @@ struct __attribute__((__packed__)) GET_VERSION_RESPONSE{
     uint32_t unlockSequence;
     uint32_t address;
     //---
-    uint16_t version;
-    uint16_t maxPacketLength;
-    uint16_t unused1;
-    uint16_t deviceId;
-    uint16_t unused2;
-    uint16_t eraseSize;
-    uint16_t writeSize;
-    uint32_t unused3;
-    uint32_t userRsvdStartSddress;
-    uint32_t userRsvdEndSddress;
+    uint8_t boot_version_major;
+    uint8_t boot_version_minor;
 };   
     
 struct __attribute__((__packed__)) RESPONSE_TYPE_0{
@@ -116,6 +108,21 @@ struct __attribute__((__packed__)) RESPONSE_TYPE_0{
     //---
     uint8_t success;
 };
+
+struct __attribute__((__packed__)) DFU_STRUCT_RESPONSE{
+    uint8_t header1;
+    uint8_t header2;
+    uint8_t header3;
+    uint8_t total_length;
+    uint8_t cmd;
+    uint16_t dataLength;
+    uint32_t unlockSequence;
+    uint32_t address;
+    //---
+    uint8_t function;
+    uint8_t status;
+};
+
 struct __attribute__((__packed__)) RESPONSE_TYPE_0_2_PAYLOAD{
     uint8_t header1;
     uint8_t header2;
@@ -155,6 +162,18 @@ struct __attribute__((__packed__)) GET_MEMORY_ADDRESS_RANGE_RESPONSE{
     //---
     uint32_t programFlashStart; 
     uint32_t programFlashEnd; 
+};
+
+struct __attribute__((__packed__)) HEADSET_INFO_RESPONSE{
+    uint8_t header1;
+    uint8_t header2;
+    uint8_t header3;
+    uint8_t total_length;
+    uint8_t type;
+    uint8_t version_major;
+    uint8_t version_minor;
+    uint8_t filter;
+    char build_date_time[25];
 };
 
 #endif

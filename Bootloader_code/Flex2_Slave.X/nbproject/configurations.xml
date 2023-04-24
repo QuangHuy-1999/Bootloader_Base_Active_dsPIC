@@ -58,6 +58,7 @@
       <itemPath>Flex2_Slave.mc3</itemPath>
     </logicalFolder>
     <itemPath>nrfinterface.h</itemPath>
+    <itemPath>nrfinterface.h</itemPath>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
   <confs>

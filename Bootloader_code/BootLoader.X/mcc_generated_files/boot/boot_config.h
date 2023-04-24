@@ -70,7 +70,7 @@ Copyright (c) [2012-2023] Microchip Technology Inc.
 #define BOOT_CONFIG_USER_IVT_TABLE_ADDRESS 0x5200
 
 
-#define BOOT_CONFIG_VERSION 0x0102
+#define BOOT_CONFIG_VERSION 0x01
 
 #define BOOT_CONFIG_MAX_PACKET_SIZE 0x100
 

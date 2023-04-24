@@ -100,8 +100,8 @@
    </usedClasses>
    <usedLibraries class="java.util.ArrayList">
       <ILibraryFile class="com.microchip.mcc.core.library.BaseLibraryFile" libraryClass="com.microchip.mcc.mcu16.Mcu16PeripheralLibrary" version="1.171.1"/>
-      <ILibraryFile class="com.microchip.mcc.core.library.BaseLibraryFile" libraryClass="com.microchip.bootloader16.mcc.Library" version="1.22.1"/>
       <ILibraryFile class="com.microchip.mcc.core.library.BaseLibraryFile" libraryClass="com.microchip.mcc.boardsupportlibrary.BoardSuppportLibrary" version="1.12.0"/>
+      <ILibraryFile class="com.microchip.mcc.core.library.BaseLibraryFile" libraryClass="com.microchip.bootloader16.mcc.Library" version="1.22.1"/>
    </usedLibraries>
    <tokenMap class="java.util.TreeMap">
       <entry>
@@ -12702,7 +12702,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="SCCP2" registerAlias="CCPCON1L"/>
-         <value>32992</value>
+         <value>32800</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="SCCP2" registerAlias="CCPCON2H"/>
@@ -12810,7 +12810,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="SCCP2" registerAlias="CCPCON1L" settingAlias="TMRPS"/>
-         <value>1:64</value>
+         <value>1:1</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="SCCP2" registerAlias="CCPCON1L" settingAlias="TMRSYNC"/>
@@ -12958,7 +12958,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="SCCP2" registerAlias="CCTI" settingAlias="priority"/>
-         <value>1</value>
+         <value>7</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="SLAVE DMT" name="USEDMT"/>
@@ -19395,12 +19395,12 @@
          <hash>9bca0d8f9a635240185a291366a5d06a87012413827148d052c4eaef206e3f43</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\system.h</file>
-         <hash>4272085f6aa5cf727a03176ef5d0e4379e26ff84f9fe989cf9f10e9ec0a84ee2</hash>
-      </entry>
-      <entry>
          <file>mcc_generated_files\spi1.c</file>
          <hash>c29bd7bd08c67fc2013a4fb14cc5601e74128b5514a6606f9cf12728d1f6b960</hash>
+      </entry>
+      <entry>
+         <file>mcc_generated_files\system.h</file>
+         <hash>4272085f6aa5cf727a03176ef5d0e4379e26ff84f9fe989cf9f10e9ec0a84ee2</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\slave_typedef.h</file>
@@ -19408,7 +19408,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\system.c</file>
-         <hash>4829331aa8194e723ea43a41c039b0bd6c81776e9f231387b9435b13c50a1ef0</hash>
+         <hash>11da771311d090f79805de60c031f805ec167b36f34c0657920680e3cf288bf9</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\clock.h</file>
@@ -19423,12 +19423,12 @@
          <hash>a0105a501e5f4a58aebbe84163a2f6a94a8c23d1329f9f908423638c0aa8d30e</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\boot\interrupts.S</file>
-         <hash>aae155eb5fc919f18126b18407bf98088ba32598093d3cca2dc785479a9dad23</hash>
-      </entry>
-      <entry>
          <file>mcc_generated_files\mcc.c</file>
          <hash>8cba05333c0ceb107896acec7b0b8b3b6018c626abb32da612f061b9ef816786</hash>
+      </entry>
+      <entry>
+         <file>mcc_generated_files\boot\interrupts.S</file>
+         <hash>aae155eb5fc919f18126b18407bf98088ba32598093d3cca2dc785479a9dad23</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\reset.h</file>
@@ -19440,23 +19440,23 @@
       </entry>
       <entry>
          <file>mcc_generated_files\mcc.h</file>
-         <hash>2c2c5d7bc38377a4705540c3a4de6b0bcd23eb3ef95cde153e63c97769aab660</hash>
-      </entry>
-      <entry>
-         <file>mcc_generated_files\sccp2_tmr.c</file>
-         <hash>7cdcafd2e327fa03c8e4f69b602fcf0e62cc9bf1cded04bb0e652e0763e9159d</hash>
+         <hash>d0ae337b08fe08a9325366076986af31409cc8469468f726a46ae9edeeaf78c5</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\uart2.h</file>
          <hash>95ae40ffce51c2642c3e0108d05896461e6cfe7f5dba88e1982fad0147dc9c84</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\uart1.h</file>
-         <hash>6af636773afb48ef8405ab8cb9ea5b679c4691d2dbd2f66e4e4258d343db2809</hash>
+         <file>mcc_generated_files\sccp2_tmr.c</file>
+         <hash>487e32fe83fd23c000e737c61538396c36d38f80094ecbeab5ad343c618b9e51</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\reset.c</file>
          <hash>6b521240a0d0e18875313ff98ef1e79d231adf8e0f1b79179e52bf8a61b8c5a0</hash>
+      </entry>
+      <entry>
+         <file>mcc_generated_files\uart1.h</file>
+         <hash>6af636773afb48ef8405ab8cb9ea5b679c4691d2dbd2f66e4e4258d343db2809</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\boot\postBuild.sh</file>
@@ -19492,7 +19492,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\pin_manager.c</file>
-         <hash>b2c72e3088a0bc7eececd3ceb9381dcdd09b0024eedf6bc30a58866c4dca5515</hash>
+         <hash>6a13931ab09973f9842a7dd2202bbdabb5f31d7c2c37702b26ff658066f3bcb3</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\boot\boot_config.h</file>
@@ -19516,7 +19516,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\interrupt_manager.c</file>
-         <hash>38d391f859d1bc3e536e6069d9c9e2b6485ef734abf90138513a06a938cffe90</hash>
+         <hash>9827dcf41723ce498ac1d3482fd6993d7244642a3d6eeff75da6a63c328d80f4</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\watchdog.h</file>

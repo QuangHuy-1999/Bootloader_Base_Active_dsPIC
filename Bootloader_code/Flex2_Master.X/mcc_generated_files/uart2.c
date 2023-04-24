@@ -66,6 +66,7 @@ static uint8_t *rxHead;
 static uint8_t *txTail;
 static uint8_t * volatile txHead;
 static bool volatile rxOverflowed;
+uint8_t Uart2_ready = 0 ;
 
 /** UART Driver Queue Length
 
@@ -258,7 +259,7 @@ void __attribute__ ( ( interrupt, no_auto_psv ) ) _U2RXInterrupt( void )
 
 void __attribute__ ((weak)) UART2_Receive_CallBack(void)
 {
-
+    Uart2_ready = 1;
 }
 
 void __attribute__ ( ( interrupt, no_auto_psv ) ) _U2EInterrupt ( void )

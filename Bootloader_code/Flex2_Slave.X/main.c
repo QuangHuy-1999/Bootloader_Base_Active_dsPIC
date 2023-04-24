@@ -64,12 +64,13 @@
 #define EEG_10224_PREFIX_1 0x6868
 #define EEG_10224_PREFIX_2 0x6868
 
-#define SAMPLE_RATE 4
+//#define SAMPLE_RATE 4
 
 #define DEBUG_VINH
 /*
                          Main application
  */
+//uint16_t SAMPLE_RATE;
 uint16_t EEG_BUFFER[NUM_EEG_MAX_BUFF][36];
 uint16_t EEG_1024HZ[NUM_EEG_MAX_BUFF][36];
 uint16_t LAST_SW_DATA[32];
@@ -84,6 +85,7 @@ uint8_t EEG_1024_tail =0;
 
 uint8_t NRF_request_to_send =0;
 
+uint16_t Sample_Rate;
 uint16_t current_count;
 uint16_t past_count;
 uint8_t eeg_cnt,eeg_cnt_prv;
@@ -229,13 +231,28 @@ int main(void)
     S1SS1_SetHigh();
     //uint8_t testSPI =0;
     uint8_t count =0;
+    EEG_Data_DATA dataReceive;
+    EEG_Data_DATA dataReceive1;
+//    EEG_Data_DATA dataX;
+    
     EEG_Data_DATA dataGet;
     EEG_Data_DATA dataGet1;
     EEG_Data_DATA dataGet2;
-    printf("SLAVE Start \n\r");
+//    EEG_Data_DATA dataGet3;
+//    printf("SLAVE Start \n\r");
     
     FilterInit();
-    
+    while(!MASTER_IsInterruptRequested());
+    MASTER_InterruptRequestAcknowledge();
+    while(MASTER_IsInterruptRequested());
+    MASTER_InterruptRequestAcknowledgeComplete(); 
+//    MASTER_EEG_DataRead((EEG_Data_DATA *)&dataX);
+//    SAMPLE_RATE = (uint16_t)1024/(dataX.ProtocolA[0]);
+    MASTER_EEG_DataRead((EEG_Data_DATA *)&dataReceive);
+    Sample_Rate = ((uint16_t)1024)/(dataReceive.ProtocolA[0]);
+//    S1SS1_SetLow();
+//    SPI1_Exchange8bitBuffer(dataReceive.ProtocolA,sizeof(dataReceive),NULL);
+//    S1SS1_SetHigh(); 
     while (1)
     {
             //Wait for interrupt from master    
@@ -256,7 +273,20 @@ int main(void)
             while(MASTER_IsInterruptRequested());
             MASTER_InterruptRequestAcknowledgeComplete();  
             MASTER_EEG_DataRead((EEG_Data_DATA *)&dataGet2);
-            
+               
+//            while(!MASTER_IsInterruptRequested());
+//            MASTER_InterruptRequestAcknowledge();
+//            while(MASTER_IsInterruptRequested());
+//            MASTER_InterruptRequestAcknowledgeComplete();  
+//            MASTER_EEG_DataRead((EEG_Data_DATA *)&dataGet3);
+//            
+//            
+//            if(dataGet3.ProtocolA[0] == 0x00066){
+//                NRF_request_to_send = 1;
+//            }
+//            else if(dataGet3.ProtocolA[0] == 0x0077){
+//                NRF_request_to_send = 0;
+//            }
             
             if((dataGet.ProtocolA[0] == EEG_10224_PREFIX_1) &&(dataGet.ProtocolA[1] == EEG_10224_PREFIX_2))
             {
@@ -270,6 +300,22 @@ int main(void)
                     EEG_1024_tail = (EEG_1024_tail +1) %  NUM_EEG_MAX_BUFF;
                 }
             }
+            
+            
+            while(!MASTER_IsInterruptRequested());
+            MASTER_InterruptRequestAcknowledge();
+            while(MASTER_IsInterruptRequested());
+            MASTER_InterruptRequestAcknowledgeComplete();   
+            MASTER_EEG_DataRead((EEG_Data_DATA *)&dataReceive1);
+            if(dataReceive1.ProtocolA[0] == 0x0001 && dataReceive1.ProtocolA[1] == 0x0002){
+                NRF_request_to_send = 1;
+            }
+            else if(dataReceive1.ProtocolA[0] == 0x0007 && dataReceive1.ProtocolA[1] == 0x0008)
+            {
+                NRF_request_to_send = 0;
+            }
+            
+            
             
             if(EEG_1024_head != EEG_1024_tail)
             {
@@ -318,7 +364,7 @@ int main(void)
 #endif
                 if (NRF_request_to_send == 1)
                 {
-                        if((EEG_1024HZ[localEEGTail][2] % SAMPLE_RATE) == 0)
+                        if((EEG_1024HZ[localEEGTail][2] % Sample_Rate) == 0)
                         {
                             EEG_1024HZ[localEEGTail][0] = 0x55AA;
                             EEG_1024HZ[localEEGTail][1] = 0x55AA;
@@ -347,32 +393,32 @@ int main(void)
             }            
             
             
-
-            if(NRF_Data_ready ==1)
-            {
-                // Process the received data from nRF chip in NRF_BUF;
-                uint8_t ReponseNRF[5];
-                ReponseNRF[0] = 0x55; // fixed header
-                ReponseNRF[1] = 0xAA;
-                
-                GetDataFromNRF();
-                
-                if((NRF_REQ_DATA[0] == 0x55) &&(NRF_REQ_DATA[1] == 0xAA))
-                {
-                    if(NRF_REQ_DATA[2] == SEND_DATA_RQ)
-                    {
-                        __delay_ms(1);
-                        ReponseNRF[2] = ACK_CMD;
-                        ReponseNRF[3] = SEND_DATA_RQ;
-                        S1SS1_SetLow();
-                        SPI1_Exchange8bitBuffer(ReponseNRF,5,NULL);
-                        S1SS1_SetHigh();
-                        EEG_tail = EEG_head;
-                        NRF_request_to_send =1; // Start sending data command
-                    }
-                }
-                NRF_Data_ready =0;
-            }
+//
+//            if(NRF_Data_ready ==1)
+//            {
+//                // Process the received data from nRF chip in NRF_BUF;
+//                uint8_t ReponseNRF[5];
+//                ReponseNRF[0] = 0x55; // fixed header
+//                ReponseNRF[1] = 0xAA;
+//                
+//                GetDataFromNRF();
+//                
+//                if((NRF_REQ_DATA[0] == 0x55) &&(NRF_REQ_DATA[1] == 0xAA))
+//                {
+//                    if(NRF_REQ_DATA[2] == SEND_DATA_RQ)
+//                    {
+//                        __delay_ms(1);
+//                        ReponseNRF[2] = ACK_CMD;
+//                        ReponseNRF[3] = SEND_DATA_RQ;
+//                        S1SS1_SetLow();
+//                        SPI1_Exchange8bitBuffer(ReponseNRF,5,NULL);
+//                        S1SS1_SetHigh();
+//                        EEG_tail = EEG_head;
+//                        NRF_request_to_send =1; // Start sending data command
+//                    }
+//                }
+//                NRF_Data_ready =0;
+//            }
     }
     return 1; 
 }

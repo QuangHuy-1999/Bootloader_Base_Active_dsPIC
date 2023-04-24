@@ -37,16 +37,40 @@
 
 
 struct __attribute__((__packed__)) DFU_STRUCT_RESPONSE{
-    uint8_t header1;
-    uint8_t header2;
-    uint8_t header3;
+    uint8_t token1;
+    uint8_t token2;
+    uint8_t function;
     uint8_t total_length;
-    uint8_t cmd;
+    uint8_t function_in_data;
     uint16_t dataLength;
     uint32_t unlockSequence;
     uint32_t address;
     //---
-    uint8_t success;  
+    uint8_t cmd;
+    uint8_t status;
+};
+
+struct __attribute__((__packed__)) HEADSET_INFO_RESPONSE{
+    uint8_t token1;
+    uint8_t token2;
+    uint8_t function;
+    uint8_t total_length;
+    uint8_t type;
+    uint8_t app_version_major;
+    uint8_t app_version_minor;
+    uint16_t EEG_rate;
+    uint8_t filter;
+    char build_date_time[25];
+};
+
+struct __attribute__((__packed__)) BLE_EEG_NOTIF_OR_UPDATE_SETTING {
+    uint8_t token1;
+    uint8_t token2;
+    uint8_t function;
+    uint8_t total_length;
+    //---
+    uint8_t cmd;
+    uint8_t status;
 };
 
 

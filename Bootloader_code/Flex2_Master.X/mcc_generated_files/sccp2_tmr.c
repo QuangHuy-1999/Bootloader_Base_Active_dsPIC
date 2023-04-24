@@ -76,8 +76,8 @@ typedef struct _SCCP2_TMR_OBJ_STRUCT
 static SCCP2_TMR_OBJ sccp2_timer_obj;
 void SCCP2_TMR_Initialize(void)
 {
-    // CCPON enabled; MOD 16-Bit/32-Bit Timer; CCSEL disabled; CCPSIDL disabled; T32 32 Bit; CCPSLP disabled; TMRPS 1:64; CLKSEL FOSC/2; TMRSYNC disabled; 
-    CCP2CON1L = (0x80E0 & 0x7FFF); //Disabling CCPON bit
+    // CCPON enabled; MOD 16-Bit/32-Bit Timer; CCSEL disabled; CCPSIDL disabled; T32 32 Bit; CCPSLP disabled; TMRPS 1:1; CLKSEL FOSC/2; TMRSYNC disabled; 
+    CCP2CON1L = (0x8020 & 0x7FFF); //Disabling CCPON bit
     //RTRGEN disabled; ALTSYNC disabled; ONESHOT disabled; TRIGEN disabled; OPS Each Time Base Period Match; SYNC None; OPSSRC Timer Interrupt Event; 
     CCP2CON1H = 0x00;
     //ASDGM disabled; SSDG disabled; ASDG 0; PWMRSEN disabled; 
@@ -93,7 +93,7 @@ void SCCP2_TMR_Initialize(void)
     //TMR 0; 
     CCP2TMRH = 0x00;
     //PR 29994; 
-    CCP2PRL = 42;
+    CCP2PRL = 2724;
     //PR 21; 
     CCP2PRH = 0; // edit timmer time
     //CMP 0; 

@@ -59,8 +59,8 @@ void INTERRUPT_Initialize (void)
     //    Priority: 1
         IPC32bits.MSIBIP = 1;
     //    CCTI: CCP2 Timer Event
-    //    Priority: 1
-        IPC6bits.CCT2IP = 1;
+    //    Priority: 7
+        IPC6bits.CCT2IP = 7;
     //    UEVTI: UART2 Event
     //    Priority: 1
         IPC47bits.U2EVTIP = 1;

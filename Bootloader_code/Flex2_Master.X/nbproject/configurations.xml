@@ -105,7 +105,7 @@
         <targetDevice>dsPIC33CH512MP205</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>noID</platformTool>
+        <platformTool>ICD3PlatformTool</platformTool>
         <languageToolchain>XC16</languageToolchain>
         <languageToolchainVersion>2.00</languageToolchainVersion>
         <platform>3</platform>
@@ -129,12 +129,12 @@
         </loading>
         <subordinates>
           <sproject>
-            <makeArtifact PL="C:/Work_space_emotiv/Dspic_205/Flex2_Slave.X"
+            <makeArtifact PL="C:/Work_space_emotiv/Pair_code/Flex2/Flex2_Slave.X"
                           CT="1"
                           CN="default"
                           AC="true"
                           BL="true"
-                          WD="C:/Work_space_emotiv/Dspic_205/Flex2_Slave.X"
+                          WD="C:/Work_space_emotiv/Pair_code/Flex2/Flex2_Slave.X"
                           BC="${MAKE}  -f Makefile CONF=default"
                           DBC="${MAKE}  -f Makefile CONF=default TYPE_IMAGE=DEBUG_RUN"
                           CC="rm -rf &quot;build/default&quot; &quot;dist/default&quot;"
@@ -469,12 +469,12 @@
         </loading>
         <subordinates>
           <sproject>
-            <makeArtifact PL="C:/Work_space_emotiv/Dspic_205/Flex2_Slave.X"
+            <makeArtifact PL="C:/Work_space_emotiv/Pair_code/Flex2/Flex2_Slave.X"
                           CT="1"
                           CN="default"
                           AC="true"
                           BL="false"
-                          WD="C:/Work_space_emotiv/Dspic_205/Flex2_Slave.X"
+                          WD="C:/Work_space_emotiv/Pair_code/Flex2/Flex2_Slave.X"
                           BC="${MAKE}  -f Makefile CONF=default"
                           DBC="${MAKE}  -f Makefile CONF=default TYPE_IMAGE=DEBUG_RUN"
                           CC="rm -rf &quot;build/default&quot; &quot;dist/default&quot;"

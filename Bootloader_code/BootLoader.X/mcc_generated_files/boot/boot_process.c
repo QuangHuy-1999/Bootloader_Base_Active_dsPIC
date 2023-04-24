@@ -69,7 +69,9 @@ Copyright (c) [2012-2023] Microchip Technology Inc.
 
 #define EXECUTABLE_IMAGE_FIRST_ADDRESS BOOT_CONFIG_PROGRAMMABLE_ADDRESS_LOW
 #define EXECUTABLE_IMAGE_LAST_ADDRESS ((unsigned long)BOOT_CONFIG_PROGRAMMABLE_ADDRESS_LOW + (unsigned long)BOOT_IMAGE_SIZE - (unsigned long)2u)
-
+#define ACK_CMD      0x88
+#define NACK_CMD     0x89
+#define RESPONSE_ACK 0xC1
 
 #if ((BOOT_CONFIG_MAX_PACKET_SIZE - SIZE_OF_CMD_STRUCT_0) < MINIMUM_WRITE_BLOCK_SIZE )
 #error "The maximum packet size is not large enough to store a full write block plus header. Make the max packet size larger."
@@ -89,14 +91,17 @@ enum BOOT_COMMAND_RESPONSES
 
 enum BOOT_COMMAND
 {
-    READ_VERSION = 0x00,
+    READ_VERSION = 0x12,
     READ_FLASH = 0x01,
     WRITE_FLASH = 0x02,
     ERASE_FLASH = 0x03,
     CALC_CHECKSUM = 0x08,
     RESET_DEVICE = 0x09,
     SELF_VERIFY = 0x0A,
-    GET_MEMORY_ADDRESS_RANGE_COMMAND = 0x0B
+    GET_MEMORY_ADDRESS_RANGE_COMMAND = 0x0B,
+    DFU_REQUEST = 0x11,
+    HEADSET_INFO = 0xEE,
+    RESPONSE_HEADSET_INFO = 0xAD
 };
 
 enum Header
@@ -117,11 +122,13 @@ static enum BOOT_COMMAND_RESULT ReadVersion(void);
 
 static void ResetDevice(void);
 static enum BOOT_COMMAND_RESULT EraseFlash(void);
+static enum BOOT_COMMAND_RESULT DfuRequest(void);
 static enum BOOT_COMMAND_RESULT WriteFlash(void);
 static enum BOOT_COMMAND_RESULT ReadFlash(void);
 static enum BOOT_COMMAND_RESULT CalculateChecksum(void);
 static enum BOOT_COMMAND_RESULT SelfVerify(void);
 static enum BOOT_COMMAND_RESULT GetMemoryAddressRange(void);
+
 
 /******************************************************************************/
 /* Public Functions                                                           */
@@ -135,7 +142,7 @@ void BOOT_Initialize()
 enum BOOT_COMMAND_RESULT BOOT_ProcessCommand(void)
 {    
     uint16_t bytes_ready = BOOT_COM_GetBytesReady();
-    uint8_t command;
+    uint8_t command, command_headset_info;
     uint16_t command_length;
     
     if (bytes_ready == 0u) 
@@ -149,15 +156,42 @@ enum BOOT_COMMAND_RESULT BOOT_ProcessCommand(void)
     }
     
     command = BOOT_COM_Peek(4);
-    // validate the length of the command will not exceed the buffer size
-    command_length = BOOT_COM_Peek(5u) + BOOT_COM_Peek(6u)*256u + sizeof(struct CMD_STRUCT_0);
-    if ( ( command_length > BOOT_CONFIG_MAX_PACKET_SIZE ) && ( command != ERASE_FLASH ) )
+    command_headset_info = BOOT_COM_Peek(2);
+    if (command_headset_info != HEADSET_INFO)
     {
-        return CommandError(BAD_LENGTH);
+        // validate the length of the command will not exceed the buffer size
+        command_length = BOOT_COM_Peek(5u) + BOOT_COM_Peek(6u)*256u + sizeof(struct CMD_STRUCT_0);
+        if ( ( command_length > BOOT_CONFIG_MAX_PACKET_SIZE ) && ( command != ERASE_FLASH ))
+        {
+            return CommandError(BAD_LENGTH);
+        }
+    }
+    
+    else if(command_headset_info == HEADSET_INFO)
+    {
+        struct HEADSET_INFO_RESPONSE response = {
+        .header1 = HEADER1,
+        .header2 = HEADER2,
+        .header3 = RESPONSE_HEADSET_INFO,
+        .total_length = 0x21,
+        .type = 2,
+        .version_major = 1,
+        .version_minor = 1,
+        .filter = 0
+        };
+        
+        strcpy(response.build_date_time, __DATE__);
+        strcat(response.build_date_time, " ");
+        strcat(response.build_date_time, __TIME__);
+        (void)BOOT_COM_Read(commandArray, 6);
+        BOOT_COM_Write((uint8_t*) & response, sizeof (struct HEADSET_INFO_RESPONSE ) / sizeof (uint8_t));
     }
     
     switch (command)
     {
+     
+    case DFU_REQUEST:
+        return DfuRequest();  
         
     case WRITE_FLASH:
         return WriteFlash();
@@ -203,7 +237,6 @@ void BOOT_StartApplication()
 /* Private Functions                                                          */
 /******************************************************************************/
 
-
 static enum BOOT_COMMAND_RESULT CommandError(enum BOOT_COMMAND_RESPONSES errorType)
 {
     struct RESPONSE_TYPE_0 response;
@@ -216,28 +249,44 @@ static enum BOOT_COMMAND_RESULT CommandError(enum BOOT_COMMAND_RESPONSES errorTy
     return BOOT_COMMAND_ERROR;
 }
 
+static enum BOOT_COMMAND_RESULT DfuRequest(void)
+{
+    struct DFU_STRUCT_RESPONSE response = {
+        .header1 = HEADER1,
+        .header2 = HEADER2,
+        .header3 = HEADER3,
+        .total_length = 0x0D,
+        .cmd = 0x11,
+        .dataLength = 0x2,
+        .unlockSequence = 0,
+        .address = 0,
+        
+        .function = RESPONSE_ACK,
+        .status = ACK_CMD
+    };
+    
+    (void)BOOT_COM_Read(commandArray, sizeof(struct CMD_STRUCT_0));
+    BOOT_COM_Write((uint8_t*) & response, sizeof (struct DFU_STRUCT_RESPONSE ) / sizeof (uint8_t));
+
+    return BOOT_COMMAND_SUCCESS;
+}
+
 static enum BOOT_COMMAND_RESULT ReadVersion(void)
 {
     struct GET_VERSION_RESPONSE response = {
         .header1 = HEADER1,
         .header2 = HEADER2,
         .header3 = HEADER3,
-        .total_length = 0x25,
-        .cmd = 0,
-        .dataLength = 0,
+        .total_length = 0x0D,
+        .cmd = 0x12,
+        .dataLength = 0x2,
         .unlockSequence = 0,
         .address = 0,
-        .version = BOOT_CONFIG_VERSION,
-        .maxPacketLength = BOOT_CONFIG_MAX_PACKET_SIZE,
-        .unused1 = 0,
-        .deviceId = 0x3456u,
-        .unused2 = 0,
-        .writeSize = MINIMUM_WRITE_BLOCK_SIZE,
-        .unused3 = 0,
-        .userRsvdStartSddress = 0,
-        .userRsvdEndSddress = 0
+        
+        .boot_version_major = 0x1,
+        .boot_version_minor = 0x1
     };
-    response.eraseSize = BOOT_EraseSizeGet();
+//    response.eraseSize = BOOT_EraseSizeGet();
     
     (void)BOOT_COM_Read(commandArray, sizeof(struct CMD_STRUCT_0));
     BOOT_COM_Write((uint8_t*) & response, sizeof (struct GET_VERSION_RESPONSE ) / sizeof (uint8_t));

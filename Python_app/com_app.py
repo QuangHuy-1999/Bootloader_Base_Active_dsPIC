@@ -14,16 +14,18 @@ from error import (
     UnsupportedCommand,
     VerifyFail,
 )
+
 from protocol import (
     Checksum,
     Command,
     Header,
     CommandCode,
     MemoryRange,
+    Version,
+    DfuResponse,
     Response,
     ResponseBase,
     ResponseCode,
-    Version,
 )
 
 
@@ -43,7 +45,7 @@ _RESPONSE_TYPE_MAP: Dict[CommandCode, Type[ResponseBase]] = {
     CommandCode.RESET_DEVICE: Response,
     CommandCode.SELF_VERIFY: Response,
     CommandCode.GET_MEMORY_ADDRESS_RANGE: MemoryRange,
-    CommandCode.DFU_REQUEST: Response
+    CommandCode.DFU_REQUEST: DfuResponse
 }
 
 
@@ -66,9 +68,17 @@ class Bootloader:
     def __init__(self, port: str, baudrate: int, **kwargs: Any):
         self.interface = Serial(port=port, baudrate=baudrate, **kwargs)
         print("Connecting to bootloader...")
-        self._dfu_request()
+        self._response_dfu = self._dfu_request()
+        print("Response dfu: ", "{:#08x}".format(self._response_dfu))
         time.sleep(1)
+
         try:
+            (
+                self._version_major,
+                self._version_minor
+            ) = self._read_version()
+
+            print("Bootloader Version: ", self._version_major,".",self._version_minor)
             self._memory_range = range(*self._get_memory_address_range())
             self._erase_size = 2048
             self._FLASH_UNLOCK_KEY = 0x00AA0055
@@ -93,7 +103,6 @@ class Bootloader:
         BootloaderError
             If HEX-file cannot be flashed.
         """
-        #self._dfu_request()
         path = hexfile
         hexfile = IntelHex(path)
         segments = self._get_segments_in_range(hexfile, self._memory_range)
@@ -150,7 +159,7 @@ class Bootloader:
 
     def _send_and_receive(self, command: Command, data: bytes = b"") -> ResponseBase:
         self.interface.write(bytes(command) + data)
-        response = _RESPONSE_TYPE_MAP[command.command].from_serial(self.interface)
+        response = _RESPONSE_TYPE_MAP[command.function_in_data].from_serial(self.interface)
         self._verify_good_response(command, response)
         return response
 
@@ -160,13 +169,16 @@ class Bootloader:
         response_packet: ResponseBase,
     ) -> None:
         """Check that response is not an error."""
-        if response_packet.command != command_packet.command:
+        if response_packet.function_in_data != command_packet.function_in_data:
             print("Command code mismatch:")
-            print("Sent: ", command_packet.command.name)
-            print(CommandCode(response_packet.command).name)
+            print("Sent: ", command_packet.function_in_data.name)
+            print(CommandCode(response_packet.function_in_data).name)
             raise BootloaderError("Command code mismatch")
 
         if isinstance(response_packet, Version):
+            return
+
+        if isinstance(response_packet, DfuResponse):
             return
 
         assert isinstance(response_packet, Response)
@@ -177,53 +189,34 @@ class Bootloader:
             print("Response: ", bytes(response_packet))
             raise _BOOTLOADER_EXCEPTIONS[response_packet.success]
 
-    def _read_version(self) -> Tuple[int, int, int, int, int]:
+    def _read_version(self) -> Tuple[bytes, bytes]:
         """Read bootloader version and some other useful information.
 
         Returns
         -------
-        version : int
-        max_packet_length : int
-            The maximum size of a single packet sent to the bootloader,
-            including both the command and associated data.
-        device_id : int
-        erase_size : int
-            Flash page size. When erasing flash memory, the number of bytes to
-            be erased must align with a flash page.
-        write_size : int
-            Write block size. When writing to flash, the number of bytes to be
-            written must align with a write block.
         """
         read_version_response = self._send_and_receive(
             Command(
-                header1=Header.header1,
-                header2=Header.header2,
-                header3=Header.header3,
+                token_1=Header.TOKEN_1,
+                token_2=Header.TOKEN_2,
+                function_dfu=Header.FUNCTION_DFU,
                 total_length=1,
-                command= CommandCode.READ_VERSION)
+                function_in_data= CommandCode.READ_VERSION)
         )
         assert isinstance(read_version_response, Version)
-        print("Got bootloader attributes: ")
-        print("Max packet length: ", read_version_response.max_packet_length)
-        print("Erase size: ", read_version_response.erase_size)
-        print("Write size: ", read_version_response.write_size)
-
         return (
-            read_version_response.version,
-            read_version_response.max_packet_length,
-            read_version_response.device_id,
-            read_version_response.erase_size,
-            read_version_response.write_size,
+            read_version_response.boot_version_major,
+            read_version_response.boot_version_minor,
         )
 
     def _get_memory_address_range(self) -> Tuple[int, int]:
         mem_range_response = self._send_and_receive(
             Command(
-                header1=Header.header1,
-                header2=Header.header2,
-                header3=Header.header3,
+                token_1=Header.TOKEN_1,
+                token_2=Header.TOKEN_2,
+                function_dfu=Header.FUNCTION_DFU,
                 total_length=1,
-                command= CommandCode.GET_MEMORY_ADDRESS_RANGE)
+                function_in_data= CommandCode.GET_MEMORY_ADDRESS_RANGE)
         )
         assert isinstance(mem_range_response, MemoryRange)
 
@@ -269,11 +262,11 @@ class Bootloader:
         print("Erasing addresses: {:#08x}".format(start_address), "->" , "{:#08x}".format(end_address))
         self._send_and_receive(
             command=Command(
-                header1=Header.header1,
-                header2=Header.header2,
-                header3=Header.header3,
+                token_1=Header.TOKEN_1,
+                token_2=Header.TOKEN_2,
+                function_dfu=Header.FUNCTION_DFU,
                 total_length=11,
-                command=CommandCode.ERASE_FLASH,
+                function_in_data= CommandCode.ERASE_FLASH,
                 data_length=(end_address - start_address) // self._erase_size,
                 unlock_sequence=self._FLASH_UNLOCK_KEY,
                 address=start_address,
@@ -304,11 +297,11 @@ class Bootloader:
         print("Writing ", len(data), "bytes to", "{:#08x}".format(data.minaddr()))
         self._send_and_receive(
             Command(
-                header1=Header.header1,
-                header2=Header.header2,
-                header3=Header.header3,
+                token_1=Header.TOKEN_1,
+                token_2=Header.TOKEN_2,
+                function_dfu=Header.FUNCTION_DFU,
                 total_length=len(data) + len(padding) + 11,
-                command=CommandCode.WRITE_FLASH,
+                function_in_data=CommandCode.WRITE_FLASH,
                 data_length=len(data) + len(padding),
                 unlock_sequence=self._FLASH_UNLOCK_KEY,
                 address=data.minaddr() >> 1,
@@ -316,34 +309,36 @@ class Bootloader:
             data.tobinstr() + padding,
         )
 
-    def _dfu_request(self) -> None:
+    def _dfu_request(self) -> bytes:
         print("DFU request")
-        self._send_and_receive(
+        dfu_response = self._send_and_receive(
             Command(
-                header1=Header.header1,
-                header2=Header.header2,
-                header3=Header.header3,
+                token_1=Header.TOKEN_1,
+                token_2=Header.TOKEN_2,
+                function_dfu=Header.FUNCTION_DFU,
                 total_length=1,
-                command=CommandCode.DFU_REQUEST))
+                function_in_data= CommandCode.DFU_REQUEST))
+        
+        return dfu_response.status
 
     def _self_verify(self) -> None:
         self._send_and_receive(
             Command(
-                header1=Header.header1,
-                header2=Header.header2,
-                header3=Header.header3,
+                token_1=Header.TOKEN_1,
+                token_2=Header.TOKEN_2,
+                function_dfu=Header.FUNCTION_DFU,
                 total_length=1,
-                command=CommandCode.SELF_VERIFY))
+                function_in_data= CommandCode.SELF_VERIFY))
         print("Self verify OK")
 
     def _get_remote_checksum(self, address: int, length: int) -> int:
         checksum_response = self._send_and_receive(
             Command(
-                header1=Header.header1,
-                header2=Header.header2,
-                header3=Header.header3,
+                token_1=Header.TOKEN_1,
+                token_2=Header.TOKEN_2,
+                function_dfu=Header.FUNCTION_DFU,
                 total_length=7,
-                command=CommandCode.CALC_CHECKSUM,
+                function_in_data= CommandCode.CALC_CHECKSUM,
                 data_length=length,
                 address=address,
             )
@@ -389,11 +384,11 @@ class Bootloader:
         """Reset device."""
         self._send_and_receive(
             Command(
-                header1=Header.header1,
-                header2=Header.header2, 
-                header3=Header.header3,
+                token_1=Header.TOKEN_1,
+                token_2=Header.TOKEN_2,
+                function_dfu=Header.FUNCTION_DFU,
                 total_length=1,
-                command=CommandCode.RESET_DEVICE))
+                function_in_data= CommandCode.RESET_DEVICE))
         print("Device reset")
 
     def _read_flash(self) -> None:

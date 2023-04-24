@@ -10,7 +10,6 @@ from serial import Serial  # type: ignore[import]
 class CommandCode(enum.IntEnum):
     """The MCC 16-bit bootloader supports these commands."""
 
-    READ_VERSION = 0x00
     READ_FLASH = 0x01
     WRITE_FLASH = 0x02
     ERASE_FLASH = 0x03
@@ -19,6 +18,7 @@ class CommandCode(enum.IntEnum):
     SELF_VERIFY = 0x0A
     GET_MEMORY_ADDRESS_RANGE = 0x0B
     DFU_REQUEST = 0x11
+    READ_VERSION = 0x12
 
 
 class ResponseCode(enum.IntEnum):
@@ -31,10 +31,11 @@ class ResponseCode(enum.IntEnum):
     VERIFY_FAIL = 0xFC
 
 class Header(enum.IntEnum):
-    header1 = 0x55
-    header2 = 0xAA
-    header3 = 0x20
-    total_length = 0 
+    TOKEN_1 = 0x55
+    TOKEN_2 = 0xAA
+    FUNCTION_DFU = 0x20
+    TOTAL_LENGTH = 0 
+
 
 _P = TypeVar("_P", bound="Packet")
 
@@ -45,13 +46,18 @@ class Packet:
 
     Layout::
 
-            uint8  |  uint8  |  uint8  |  uint8  |  uint8   | uint16      | uint32          | uint32   |
-           header1 | header1 | header2 |  total  |  command | data_length | unlock_sequence | address  |
+            uint8  |  uint8  |  uint8       |  uint8  |       uint8       | uint16      | uint32          | uint32   |
+           token_1 | token_2 | function_dfu |  total  |  function_in_data | data_length | unlock_sequence | address  |
 
     Parameters
     ----------
-    header 1,2,3
-    command : CommandCode
+    token 1,2: Header
+        Token
+    function_dfu: Header       
+        Nrf knows this is a bootloader app
+    total: Header
+        Total number of data bytes
+    function_in_data : CommandCode
         Command code which specifies which command should be executed by the bootloader.
     data_length : uint16
         Meaning depends on value of 'command'-field::
@@ -78,11 +84,11 @@ class Packet:
     VERIFY_FAIL.
     """
 
-    header1: Header
-    header2: Header
-    header3: Header
+    token_1: Header
+    token_2: Header
+    function_dfu: Header
     total_length: Header
-    command: CommandCode
+    function_in_data: CommandCode
     data_length: int = 0
     unlock_sequence: int = 0
     address: int = 0
@@ -127,43 +133,35 @@ class ResponseBase(Packet):
     Layout is identical to Packet.
     """
 
-
 @dataclass
 class Version(ResponseBase):
     """Response to a READ_VERSION command.
 
     Layout::
-
-        | [Packet] | uint16  | uint16            | uint16    | uint16    | ...
-        | [Packet] | version | max_packet_length | (ignored) | device_id | ...
-
-        ... | uint16    | uint16     | uint16     | uint32    | uint32    | uint32    |
-        ... | (ignored) | erase_size | write_size | (ignored) | (ignored) | (ignored) |
+        | [Packet] | uint8              | uint8              |
+        | [Packet] | boot_version_major | boot_version_minor |
 
     Parameters
     ----------
-    version : uint16
-        Bootloader version number.
-    max_packet_length : int16
-        Maximum number of bytes which can be sent to the bootloader per packet. Includes
-        the size of the packet itself plus associated data.
-    device_id : uint16
-        A device-specific identifier.
-    erase_size : uint16
-        Size of a flash erase page in bytes. When erasing flash, the size of the memory
-        area which should be erased is given in number of erase pages.
-    write_size : uint16
-        Size of a write block in bytes. When writing to flash, the data must align with
-        a write block.
     """
+    boot_version_major: bytes = 0
+    boot_version_minor: bytes = 0
+    FORMAT: ClassVar[str] = Packet.FORMAT + "BB"
 
-    version: int = 0
-    max_packet_length: int = 0
-    device_id: int = 0
-    erase_size: int = 0
-    write_size: int = 0
-    FORMAT: ClassVar[str] = Packet.FORMAT + "2H2xH2x2H12x"
+@dataclass
+class DfuResponse(ResponseBase):
 
+    """
+    Layout::
+        | [Packet] | uint8    | uint8  |
+        | [Packet] | function | status |
+
+    Parameters
+    ----------
+    """
+    function: bytes = 0
+    status: bytes = 0
+    FORMAT: ClassVar[str] = Packet.FORMAT + "BB"
 
 @dataclass
 class Response(ResponseBase):
@@ -223,3 +221,6 @@ class Checksum(Response):
 
     checksum: int = 0
     FORMAT: ClassVar[str] = Response.FORMAT + "H"
+
+# @dataclass
+# class HeadsetInfo():
